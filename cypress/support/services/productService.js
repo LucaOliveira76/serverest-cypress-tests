@@ -21,4 +21,13 @@ export const productService = {
       failOnStatusCode: false,
     });
   },
+
+  findByName(name) {
+    return cy.request({
+      method: 'GET',
+      url: endpoint(),
+      qs: { nome: name },
+      failOnStatusCode: false,
+    });
+  },
 };
