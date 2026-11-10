@@ -10,6 +10,15 @@ export const userService = {
     });
   },
 
+  findByEmail(email) {
+    return cy.request({
+      method: 'GET',
+      url: endpoint(),
+      qs: { email },
+      failOnStatusCode: false,
+    });
+  },
+
   remove(id) {
     return cy.request({
       method: 'DELETE',
