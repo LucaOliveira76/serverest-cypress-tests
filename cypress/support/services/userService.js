@@ -1,4 +1,4 @@
-const endpoint = () => `${Cypress.env('apiUrl')}/usuarios`;
+const endpoint = () => `${Cypress.expose('apiUrl')}/usuarios`;
 
 export const userService = {
   create(user) {

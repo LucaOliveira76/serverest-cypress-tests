@@ -8,7 +8,7 @@ module.exports = defineConfig({
     video: false,
     retries: { runMode: 2, openMode: 0 },
     defaultCommandTimeout: 8000,
-    env: {
+    expose: {
       apiUrl: 'https://serverest.dev',
     },
   },
