@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "Swagger: errorEmailJaUtilizado, errorEmailSenhaInvalidos, tokenAusenteInvalidoExpirado, rotaParaAdministradores and the delete 200 response. The Swagger declares nothing required; 'required' was added from observed responses.",
+  "title": "Message response",
+  "type": "object",
+  "required": ["message"],
+  "properties": {
+    "message": { "type": "string", "minLength": 1 }
+  }
+}

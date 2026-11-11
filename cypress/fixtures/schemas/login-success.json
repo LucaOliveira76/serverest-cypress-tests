@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "Swagger: loginComSucesso. 'required' and the Bearer pattern were added from observed responses and the Swagger example.",
+  "title": "Login success",
+  "type": "object",
+  "required": ["message", "authorization"],
+  "properties": {
+    "message": { "type": "string", "minLength": 1 },
+    "authorization": { "type": "string", "pattern": "^Bearer .+" }
+  }
+}
