@@ -4,7 +4,7 @@
 
 Automated test suite for [ServeRest](https://serverest.dev/) (API) and its [frontend](https://front.serverest.dev/), built with Cypress and JavaScript.
 
-- **3 API specs, 8 tests** (users, login, products)
+- **4 API specs, 19 tests** (users, login, products and a contract spec)
 - **3 E2E specs, 5 tests** (registration, login, admin product management)
 - Positive and negative scenarios where the application supports them
 
@@ -18,6 +18,7 @@ Automated test suite for [ServeRest](https://serverest.dev/) (API) and its [fron
 ```bash
 npm ci
 ```
+
 | Command              | What it does                   |
 | -------------------- | ------------------------------ |
 | `npm run cy:run`     | Runs the full suite headless   |
@@ -33,7 +34,7 @@ The API URL is a public value exposed through `Cypress.expose()`. Override it fr
 
 ```bash
 npm run cy:run:api -- --expose apiUrl=http://localhost:3000
-````
+```
 
 The frontend URL is `baseUrl` in `cypress.config.js`. The suite needs no secrets, so there is no `.env` file.
 
@@ -42,15 +43,17 @@ The frontend URL is `baseUrl` in `cypress.config.js`. The suite needs no secrets
 ```
 cypress/
   e2e/
-    api/        users.cy.js, login.cy.js, products.cy.js
+    api/        users.cy.js, login.cy.js, products.cy.js, contract.cy.js
     ui/         register.cy.js, login.cy.js, product.cy.js
   support/
     factories/  userFactory.js, productFactory.js
     pages/      RegisterPage.js, LoginPage.js, ProductPage.js
     services/   userService.js, authService.js, productService.js
+    contract.js ajv-based schema validation helper
     commands.js deleteUserByEmail, deleteProductByName, loginAs
     e2e.js      loads the custom commands
-  fixtures/     product.png (1x1 image for the upload field)
+    fixtures/     product.png (1x1 image for the upload field)
+      schemas/ (JSON schemas for the contract tests)
 .github/workflows/cypress.yml
 ```
 
@@ -68,6 +71,24 @@ cypress/
 | Products | Admin creates a product               | 201, `_id` returned                  |
 | Products | Create a product without a token      | 401                                  |
 | Products | Create a product as a non-admin user  | 403                                  |
+
+### API contract
+
+Responses documented in the Swagger are validated against JSON schemas, together with their status code.
+
+| Endpoint                | Status | Validated against   |
+| ----------------------- | ------ | ------------------- |
+| `POST /usuarios`        | 201    | creation schema     |
+| `POST /usuarios`        | 400    | message schema      |
+| `GET /usuarios`         | 200    | user list schema    |
+| `DELETE /usuarios/{id}` | 200    | message schema      |
+| `POST /login`           | 200    | login schema        |
+| `POST /login`           | 401    | message schema      |
+| `POST /produtos`        | 201    | creation schema     |
+| `POST /produtos`        | 401    | message schema      |
+| `POST /produtos`        | 403    | message schema      |
+| `GET /produtos`         | 200    | product list schema |
+| `DELETE /produtos/{id}` | 200    | message schema      |
 
 ### E2E
 
@@ -93,6 +114,7 @@ cypress/
 - **Sessions.** `cy.session()` caches the admin login in the product spec, and the session id is the email so no password reaches the command log.
 - **Retries.** Two retries in `run` mode only. Failures in `before` hooks are never retried.
 - **Cypress 16 configuration.** Public values use `Cypress.expose()`. `cy.env()` is the channel for secrets if the suite ever needs them.
+- **Contract tests.** Responses documented in the Swagger are validated against JSON schemas (Ajv) in a dedicated spec. The Swagger declares no required fields, so each schema keeps its names and types and adds `required` from observed responses. Extra fields are allowed, so the API can grow without breaking the suite while a missing or retyped field fails.
 
 ## CI/CD
 

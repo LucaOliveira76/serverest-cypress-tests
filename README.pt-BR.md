@@ -4,7 +4,7 @@
 
 Suíte de testes automatizados para o [ServeRest](https://serverest.dev/) (API) e seu [frontend](https://front.serverest.dev/), construída com Cypress e JavaScript.
 
-- **3 specs de API, 8 testes** (usuários, login, produtos)
+- **4 specs de API, 19 testes** (usuários, login, produtos e uma spec de contrato)
 - **3 specs E2E, 5 testes** (cadastro, login, gestão de produtos como admin)
 - Cenários positivos e negativos onde a aplicação permite
 
@@ -43,15 +43,17 @@ A URL do frontend é o `baseUrl` em `cypress.config.js`. A suíte não precisa d
 ```
 cypress/
   e2e/
-    api/        users.cy.js, login.cy.js, products.cy.js
+    api/        users.cy.js, login.cy.js, products.cy.js, contract.cy.js
     ui/         register.cy.js, login.cy.js, product.cy.js
   support/
     factories/  userFactory.js, productFactory.js
     pages/      RegisterPage.js, LoginPage.js, ProductPage.js
     services/   userService.js, authService.js, productService.js
+    contract.js helper de validação de schema com Ajv
     commands.js deleteUserByEmail, deleteProductByName, loginAs
     e2e.js      carrega os comandos customizados
-  fixtures/     product.png (imagem 1x1 para o campo de upload)
+    fixtures/     product.png (imagem 1x1 para o campo de upload)
+      schemas/ (JSON schemas dos testes de contrato)
 .github/workflows/cypress.yml
 ```
 
@@ -69,6 +71,24 @@ cypress/
 | Produtos | Admin cria um produto                | 201, `_id` retornado                      |
 | Produtos | Criar produto sem token              | 401                                       |
 | Produtos | Criar produto como usuário não admin | 403                                       |
+
+### Contrato da API
+
+As respostas documentadas no Swagger são validadas contra JSON schemas, junto com o código de status.
+
+| Endpoint                | Status | Validado contra             |
+| ----------------------- | ------ | --------------------------- |
+| `POST /usuarios`        | 201    | schema de criação           |
+| `POST /usuarios`        | 400    | schema de mensagem          |
+| `GET /usuarios`         | 200    | schema de lista de usuários |
+| `DELETE /usuarios/{id}` | 200    | schema de mensagem          |
+| `POST /login`           | 200    | schema de login             |
+| `POST /login`           | 401    | schema de mensagem          |
+| `POST /produtos`        | 201    | schema de criação           |
+| `POST /produtos`        | 401    | schema de mensagem          |
+| `POST /produtos`        | 403    | schema de mensagem          |
+| `GET /produtos`         | 200    | schema de lista de produtos |
+| `DELETE /produtos/{id}` | 200    | schema de mensagem          |
 
 ### E2E
 
@@ -93,8 +113,8 @@ cypress/
 - **Sessões.** `cy.session()` guarda em cache o login do admin na spec de produtos, e o identificador da sessão é o e-mail, para que nenhuma senha apareça no log de comandos.
 - **Retentativas.** Duas retentativas somente no modo `run`. Falhas em hooks `before` nunca são repetidas.
 - **Configuração do Cypress 16.** Valores públicos usam `Cypress.expose()`. O `cy.env()` é o canal para segredos, caso a suíte venha a precisar deles.
+- **Testes de contrato.** As respostas documentadas no Swagger são validadas contra JSON schemas (Ajv) em uma spec dedicada. O Swagger não declara nenhum campo como obrigatório, então cada schema mantém os nomes e tipos e acrescenta `required` a partir das respostas observadas. Campos extras são permitidos, de modo que a API pode crescer sem quebrar a suíte, enquanto um campo ausente ou com tipo alterado falha.
 
 ## CI/CD
 
 O workflow do GitHub Actions é executado em pushes para `main`, pull requests e disparo manual. Ele instala com `npm ci` e depois executa lint, specs de API e specs E2E, nessa ordem. Os screenshots são enviados como artefato somente quando uma etapa falha.
-
